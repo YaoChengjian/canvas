@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>简易--画板</title>
+    <style>
+      * {
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+      }
+      body {
+        overflow: hidden;
+      }
+      ul {
+        list-style: none;
+      }
+      .clear {
+        position: fixed;
+        top: 50%;
+        right: 20px;
+      }
+      .clear > li {
+        padding: 10px;
+        border: 1px solid green;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+    <ul class="clear">
+      <li id="eraser">橡皮擦</li>
+      <li id="red">红色笔</li>
+      <li id="black">黑色笔</li>
+    </ul>
+    <script>
+      let canvas = document.getElementById("canvas"),
+        ctx = canvas.getContext("2d"),
+        onOff = false, //开关
+        last = null; //记录开始圆和结束圆的值
+
+      canvas.width = document.documentElement.clientWidth;
+      canvas.height = document.documentElement.clientHeight;
+
+      //画圆函数
+      drawingCircle = (x, y, color) => {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(x, y, 0, 0, Math.PI * 2);
+        ctx.fill();
+      };
+
+      //画直线函数
+      drawingLine = (x1, y1, x2, y2, color) => {
+        ctx.strokeStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.lineWidth = 10;
+        ctx.lineCap = "round";
+        ctx.stroke();
+      };
+
+      fn = color => {
+        if ("ontouchstart" in document.documentElement) {
+          canvas.ontouchstart = e => {
+            let x = e.touches[0].clientX,
+              y = e.touches[0].clientY;
+            last = [x, y];
+            onOff = true;
+          };
+        }
+        canvas.onmousedown = e => {
+          let x = e.clientX,
+            y = e.clientY;
+          last = [x, y];
+          onOff = true;
+        };
+        canvas.onmousemove = e => {
+          if (onOff) {
+            let x = e.clientX,
+              y = e.clientY;
+            drawingCircle(x, y, color);
+            drawingLine(last[0], last[1], x, y, color);
+            last = [x, y];
+          } else {
+            console.log("什么都不做!!!");
+          }
+        };
+
+        canvas.ontouchmove = e => {
+          if (onOff) {
+            let x = e.touches[0].clientX,
+              y = e.touches[0].clientY;
+            drawingCircle(x, y, color);
+            drawingLine(last[0], last[1], x, y, color);
+            last = [x, y];
+          } else {
+            console.log("什么都不做!!!");
+          }
+        };
+
+        canvas.onmouseup = () => {
+          onOff = false;
+        };
+      };
+      //fn("yellow");
+
+      // 选择步骤
+      let eraser = document.getElementById("eraser"),
+        red = document.getElementById("red"),
+        black = document.getElementById("black");
+
+      let color = null;
+      eraser.onclick = () => {
+        color = "white";
+        fn(color);
+      };
+      red.onclick = () => {
+        color = "red";
+        fn(color);
+      };
+      black.onclick = () => {
+        color = "black";
+        fn(color);
+      };
+
+      canvas.ontouchstart = () => {
+        fn();
+      };
+    </script>
+  </body>
+</html>
